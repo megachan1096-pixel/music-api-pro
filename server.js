@@ -1,10 +1,10 @@
-import express from "express";
-import ytdl from "@distube/ytdl-core";
+const express = require("express");
+const fetch = require("node-fetch");
 
 const app = express();
 
 app.get("/", (req, res) => {
-  res.send("🔥 Music API PRO READY");
+  res.send("API Music OK");
 });
 
 app.get("/play", async (req, res) => {
@@ -12,35 +12,18 @@ app.get("/play", async (req, res) => {
   if (!url) return res.send("Masukkan URL");
 
   try {
-    // YouTube
-    if (url.includes("youtube.com") || url.includes("youtu.be")) {
-      if (!ytdl.validateURL(url)) {
-        return res.send("URL tidak valid");
-      }
+    const api = await fetch(`https://api.vevioz.com/api/button/mp3?url=${encodeURIComponent(url)}`);
+    const text = await api.text();
 
-      const info = await ytdl.getInfo(url);
+    const match = text.match(/href="(https:\/\/[^"]+\.mp3)"/);
 
-      const format = ytdl.chooseFormat(info.formats, {
-        quality: "highestaudio",
-        filter: "audioonly"
-      });
-
-      return res.redirect(format.url);
+    if (!match) {
+      return res.send("Gagal ambil audio");
     }
 
-    // TikTok
-    if (url.includes("tiktok.com")) {
-      const api = await fetch(`https://tikwm.com/api/?url=${encodeURIComponent(url)}`);
-      const data = await api.json();
+    const audio = match[1];
 
-      if (!data.data || !data.data.music) {
-        return res.send("Gagal ambil audio TikTok");
-      }
-
-      return res.redirect(data.data.music);
-    }
-
-    res.send("Platform tidak didukung");
+    res.redirect(audio);
 
   } catch (err) {
     console.log(err);
@@ -49,4 +32,4 @@ app.get("/play", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("🔥 Server jalan"));
+app.listen(PORT, () => console.log("Server jalan"));
