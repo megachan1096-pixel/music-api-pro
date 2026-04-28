@@ -1,36 +1,53 @@
 const express = require('express');
 const { exec } = require('child_process');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-let cache = {};
+// AUTO INSTALL (biar jalan di Railway)
+try { execSync("pip install yt-dlp"); } catch(e) {}
+try { execSync("apt update && apt install -y ffmpeg"); } catch(e) {}
 
-function getAudio(url) {
-    return new Promise((resolve, reject) => {
-        exec(`yt-dlp -f bestaudio -g "${url}"`, (err, stdout) => {
-            if (err) return reject();
-            resolve(stdout.trim());
-        });
-    });
-}
-
-app.get('/play', async (req, res) => {
-    const url = req.query.url;
-
-    if (!url) return res.send("ERROR");
-
-    if (cache[url]) return res.send(cache[url]);
-
-    try {
-        const audio = await getAudio(url);
-        cache[url] = audio;
-        res.send(audio);
-    } catch {
-        res.send("ERROR");
-    }
+// ROOT
+app.get('/', (req, res) => {
+    res.send("✅ API MUSIC AKTIF");
 });
 
-app.get('/', (req, res) => res.send("API ONLINE"));
+// PLAY ENDPOINT
+app.get('/play', (req, res) => {
+    const url = req.query.url;
 
-app.listen(PORT);
+    if (!url) {
+        return res.json({ status: false, error: "URL kosong" });
+    }
+
+    // VALIDASI LINK
+    if (!url.includes("youtube") && !url.includes("youtu.be") && !url.includes("tiktok") && !url.includes("spotify")) {
+        return res.json({ status: false, error: "Link tidak didukung" });
+    }
+
+    // COMMAND yt-dlp
+    const cmd = `yt-dlp -f bestaudio -g "${url}"`;
+
+    exec(cmd, (err, stdout, stderr) => {
+        if (err || !stdout) {
+            return res.json({
+                status: false,
+                error: "Gagal mengambil audio, coba link lain"
+            });
+        }
+
+        const stream = stdout.trim().split("\n")[0];
+
+        res.json({
+            status: true,
+            result: stream
+        });
+    });
+});
+
+// SERVER START
+app.listen(PORT, () => {
+    console.log("Server jalan di port " + PORT);
+});
