@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 
 app.get("/", (req, res) => {
-  res.send("API Music OK");
+  res.send("API MUSIC OK");
 });
 
 app.get("/play", async (req, res) => {
@@ -25,7 +25,9 @@ app.get("/play", async (req, res) => {
 
     const audio = match[1];
 
+    // 🔥 langsung play (redirect)
     res.redirect(audio);
+
   } catch (err) {
     console.log(err);
     res.send("Error server");
