@@ -1,13 +1,13 @@
 {
-  "name": "music-api-pro",
+  "name": "music-api",
   "version": "1.0.0",
   "main": "server.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
-    "start": "rm -rf node_modules package-lock.json && npm install && node server.js"
+    "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "@distube/ytdl-core": "latest"
+    "express": "^4.18.2",
+    "node-fetch": "2"
   }
 }
