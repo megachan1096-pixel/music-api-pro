@@ -1,5 +1,4 @@
-import express from "express";
-import fetch from "node-fetch";
+const express = require("express");
 
 const app = express();
 
@@ -12,11 +11,12 @@ app.get("/play", async (req, res) => {
   if (!url) return res.send("Masukkan URL");
 
   try {
-    // ambil dari API converter
-    const api = await fetch(`https://api.vevioz.com/api/button/mp3?url=${encodeURIComponent(url)}`);
+    const api = await fetch(
+      "https://api.vevioz.com/api/button/mp3?url=" + encodeURIComponent(url)
+    );
+
     const text = await api.text();
 
-    // ambil link mp3 dari hasil HTML
     const match = text.match(/href="(https:\/\/[^"]+\.mp3)"/);
 
     if (!match) {
@@ -25,13 +25,12 @@ app.get("/play", async (req, res) => {
 
     const audio = match[1];
 
-    // 🔥 langsung redirect (bukan JSON)
     res.redirect(audio);
-
   } catch (err) {
+    console.log(err);
     res.send("Error server");
   }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server jalan"));
+app.listen(PORT, () => console.log("Server jalan di " + PORT));
